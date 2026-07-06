@@ -1,31 +1,43 @@
-CC=cc
-CFLAGS= -Wall -Wextra -Werror
-NAME=ft_ping
-DIR_UTILS=./src/
-UTILSFILES=  main.c parser.c
+CC          = cc
+CFLAGS      = -Wall -Wextra -Werror #-fsanitize=address
+NAME        = ft_ping
 
-SRCS= $(UTILSFILES:%.c=$(DIR_UTILS)%.c)
+DIR_UTILS   = src/
+DIR_OBJ     = obj/
 
-OBJS=$(SRCS:.c=.o)
+UTILSFILES  = main.c parser.c resolve_host.c connect_socket.c prepare_msg.c utils.c recv_msg.c
 
-all:  $(NAME)
+# Prefixes src/ to every file: src/main.c src/parser.c
+SRCS        = $(addprefix $(DIR_UTILS), $(UTILSFILES))
+
+# Transforms src/main.c into obj/main.o
+OBJS        = $(UTILSFILES:%.c=$(DIR_OBJ)%.o)
+
+all: $(NAME)
 	@echo "\033[032m ready \033[0m"
 
+# Link the executable
 $(NAME): $(OBJS)
 	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
-	@echo "\033[032m compiled succefuly !!\033[0m"
+	@echo "\033[032m compiled successfully !!\033[0m"
 
+# Compile .c from src/ into .o in obj/
+$(DIR_OBJ)%.o: $(DIR_UTILS)%.c
+	@mkdir -p $(DIR_OBJ)
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS)
+	@rm -rf $(DIR_OBJ)
+	@echo "\033[034m object files are cleaned !!\033[0m"
 
-	@echo "\033[034m files are cleaned !!\033[0m"
-
-fclean:clean
+fclean: clean
 	@rm -f $(NAME)
-	@echo "\033[034m cleaned !!\033[0m"
+	@echo "\033[034m binary cleaned !!\033[0m"
 
-re:fclean all
+re: fclean all
 
-.PHONY:all ,clean ,fclean , re
-.SILENT:$(OBJS)
+test:
+	@$(CC)  test.c -o test
+	./test
+	rm -f test
+.PHONY: all clean fclean re
